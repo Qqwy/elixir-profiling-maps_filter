@@ -5,7 +5,7 @@ defmodule Benchmarks do
   @parallel 1
 
   @inputs (
-  (5..10)
+  (5..20)
   |> Enum.map(&Integer.pow(2, &1))
   |> Enum.map(&(1..&1))
   |> Enum.map(fn range ->
