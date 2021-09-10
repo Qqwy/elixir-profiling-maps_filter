@@ -1,7 +1,7 @@
 defmodule Benchmarks do
-  @warmup 2
-  @time 5
-  @memory_time 2
+  @warmup 1
+  @time 2
+  @memory_time 0.5
   @parallel 1
 
   # @inputs (
@@ -15,16 +15,11 @@ defmodule Benchmarks do
   # )
 
   def build_inputs(max_exp \\ 6) do
-    for {exp, iterations_exp} <-
-    Enum.zip(
-      0..max_exp,
-      5..1 |> Stream.concat(Stream.repeatedly(fn -> 1 end)) |> Enum.take(max_exp + 1)
-    ),
+    for exp <- 0..max_exp,
       scale = trunc(:math.pow(10, exp)),
-      iterations = trunc(:math.pow(10, iterations_exp)),
+      # iterations = trunc(:math.pow(10, iterations_exp)),
       factor <- if(exp == max_exp, do: [1], else: 1..9) do
-        size = scale * factor
-
+        scale * factor
       end
     |> Enum.map(fn size -> {padded_int(size, max_exp + 1), build_map_from_range(0..size - 1)} end)
   end
