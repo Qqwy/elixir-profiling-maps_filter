@@ -25,6 +25,8 @@ defmodule MapsFilterProf.MixProject do
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
       {:benchee_csv, "~> 1.0", only: :dev},
       {:benchee_markdown, "~> 0.2", only: :dev},
+      {:gnuplot, "~> 1.20"},
+      {:csv, "~> 2.4"},
     ]
   end
 end

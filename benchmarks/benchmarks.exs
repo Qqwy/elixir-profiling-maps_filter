@@ -1,18 +1,45 @@
 defmodule Benchmarks do
-  @warmup 0.5
-  @time 0.5
-  @memory_time 0.5
-  @parallel 1
+  @warmup 1
+  @time 2
+  @memory_time 1
+  @parallel 4
 
-  @inputs (
-  (5..20)
-  |> Enum.map(&Integer.pow(2, &1))
-  |> Enum.map(&(1..&1))
-  |> Enum.map(fn range ->
-    name = range.last |> Integer.to_string |> String.pad_leading(10, "0")
-    {"#{name}", range}
-  end)
-  )
+  # @inputs (
+  # (5..25)
+  # |> Enum.map(&Integer.pow(2, &1))
+  # |> Enum.map(&(1..&1))
+  # |> Enum.map(fn range ->
+  #   name = range.last |> Integer.to_string |> String.pad_leading(10, "0")
+  #   {"#{name}", range}
+  # end)
+  # )
+
+  def build_inputs(max_exp \\ 6) do
+    for {exp, iterations_exp} <-
+    Enum.zip(
+      0..max_exp,
+      5..1 |> Stream.concat(Stream.repeatedly(fn -> 1 end)) |> Enum.take(max_exp + 1)
+    ),
+      scale = trunc(:math.pow(10, exp)),
+      iterations = trunc(:math.pow(10, iterations_exp)),
+      factor <- if(exp == max_exp, do: [1], else: 1..9) do
+        size = scale * factor
+
+      end
+    |> Enum.map(fn size -> {padded_int(size, max_exp + 1), build_map_from_range(0..size - 1)} end)
+  end
+
+  defp build_map_from_range(range) do
+    range
+    |> Enum.map(&({&1, &1}))
+    |> Enum.into(%{})
+  end
+
+  defp padded_int(integer, max_pad) do
+    integer
+    |> Integer.to_string
+    |> String.pad_leading(max_pad, "0")
+  end
 
   def odd_value1?({_key, value}) do
     require Integer
@@ -32,10 +59,11 @@ defmodule Benchmarks do
           ":maps.filter" => fn input -> :maps.filter(&odd_value2?/2, input) end,
                 },
       after_each: fn _ -> :erlang.garbage_collect() end, # make garbage collection unlikely to occur _during_ benchmark.
-      inputs: @inputs,
+      inputs: build_inputs(6),
       warmup: @warmup,
       time: @time,
       memory_time: @memory_time,
+      parallel: @parallel,
       pre_check: true,
       formatters: [
         Benchee.Formatters.Console,
@@ -54,10 +82,23 @@ defmodule Benchmarks do
         """}
       ]
     )
+
+    run_integer_maps_oddness()
+    Chart.build_from_csv("benchmark_runs/map_filter.csv", commands: [
+          [:set, :title, "filter odd integers"],
+          [:set, :xlabel, "Map size"],
+          [:set, :format, :x, "%.0s%c"],
+          [:set, :format, :y, "%.0s%cs"],
+          [:set, :grid, :xtics],
+          [:set, :grid, :ytics],
+          [:set, :logscale, :x, 10],
+          [:set, :logscale, :y, 10],
+        ])
+
+    Chart.build_from_csv("benchmark_runs/map_filter.csv", "Filter odd integers", "Map size", "Average running time")
   end
 
   def run() do
-    run_integer_maps_oddness()
   end
 
 end
