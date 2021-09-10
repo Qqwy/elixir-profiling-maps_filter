@@ -1,7 +1,7 @@
 defmodule Chart do
   # Based on benchmark plotting code
   # written by Saša Jurić
-  def build(data, opts) do
+  def plot(data, opts) do
     Application.put_env(:gnuplot, :timeout, {0, :ms})
 
     titles = Enum.map(data, fn {title, _} -> to_string(title) end)
@@ -20,7 +20,7 @@ defmodule Chart do
         :smooth,
         :csplines,
         :with,
-        :linespoints,
+        :lines,
         :pn,
         5,
         :lc,
@@ -31,13 +31,12 @@ defmodule Chart do
         :pt,
         pt,
         :ps,
-        1.6
+        0.5
       ]
     end)
-    |> Gnuplot.plots()
 
       Gnuplot.plot(
-        Keyword.get(opts, :commands, []) ++ [[:set, :key, :left, :top], plots],
+        Keyword.get(opts, :commands, []) ++ [[:set, :key, :left, :top], Gnuplot.plots(plots)],
         Enum.map(
           data,
           fn {_title, points} -> Enum.map(points, &Tuple.to_list/1) end
@@ -45,7 +44,7 @@ defmodule Chart do
       )
   end
 
-  def build_from_csv_raw(filepath, opts) do
+  def plot_from_csv_raw(filepath, opts) do
     filepath
     |> Path.expand()
     |> File.stream!
@@ -58,7 +57,7 @@ defmodule Chart do
     )
     |> Enum.map(fn {k, v} -> {k, Enum.sort(v)} end)
     |> Enum.into(%{})
-    |> build(opts)
+    |> plot(opts)
   end
 
   defp escape_underscores(string) do
@@ -66,17 +65,19 @@ defmodule Chart do
     |> String.replace("_", "\\\\\\_")
   end
 
-  def build_from_csv(filepath, title, xlabel, ylabel) do
-    build_from_csv_raw(filepath, commands: [
+  def plot_from_csv(filepath, title, xlabel, ylabel) do
+    plot_from_csv_raw(filepath, commands: [
           [:set, :title, title],
           [:set, :xlabel, xlabel],
           [:set, :ylabel, ylabel],
-          [:set, :format, :x, "%.0s%c"],
-          [:set, :format, :y, "%s%cs"],
           [:set, :grid, :xtics],
           [:set, :grid, :ytics],
-          # [:set, :logscale, :x, 10],
-          # [:set, :logscale, :y, 10],
+          [:set, :format, :x, "%.0s%c"],
+          [:set, :format, :y, "%.0s%cs"],
+          [:set, :logscale, :x, 10],
+          [:set, :logscale, :y, 10],
+          [:set, :term, :svg],
+          [:set, :output, Path.expand(String.replace_suffix(filepath, ".csv", ".svg"))],
         ])
   end
 end

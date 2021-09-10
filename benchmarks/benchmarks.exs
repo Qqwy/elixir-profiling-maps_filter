@@ -1,7 +1,7 @@
 defmodule Benchmarks do
-  @warmup 0.5
-  @time 0.5
-  @memory_time 0.5
+  @warmup 2
+  @time 5
+  @memory_time 2
   @parallel 1
 
   # @inputs (
@@ -84,7 +84,6 @@ defmodule Benchmarks do
     )
 
 
-    Chart.build_from_csv("benchmark_runs/map_filter.csv", "Filter odd integers", "Map size", "Average running time")
   end
 
   def run() do
