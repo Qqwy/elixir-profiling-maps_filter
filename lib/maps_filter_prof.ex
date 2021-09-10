@@ -40,5 +40,37 @@ defmodule MapsFilterProf do
     end
   end
 
+  def direct_filter_inlined(map_or_iter, fun) when is_function(fun, 1) do
+    iter =
+    if is_map(map_or_iter) do
+      iterator(map_or_iter)
+    else
+      map_or_iter
+    end
+
+    next = next(iter)
+
+    # Cannot be inlined as it is a BIF
+    :maps.from_list(do_direct_filter_inlined(next, fun))
+  end
+
+  defp do_direct_filter_inlined(:none, _fun), do: []
+  defp do_direct_filter_inlined({key, value, iter}, fun) do
+    if fun.({key, value}) do
+      [{key, value} | do_direct_filter_inlined(next(iter), fun)]
+    else
+      do_direct_filter_inlined(next(iter), fun)
+    end
+  end
+
+  defp iterator(map) when is_map(map), do: [0 | map]
+  defp iterator(_other), do: raise BadMapError
+
+  defp next({key, val, iter}), do: {key, val, iter}
+  defp next([path | map]) when is_integer(path) and is_map(map), do: :erts_internal.map_next(path, map, :iterator)
+  defp next(:none), do: :none
+
+
+
 
 end
