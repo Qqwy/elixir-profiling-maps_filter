@@ -1,8 +1,8 @@
 defmodule Benchmarks do
-  @warmup 1
-  @time 2
-  @memory_time 1
-  @parallel 4
+  @warmup 0.5
+  @time 0.5
+  @memory_time 0.5
+  @parallel 1
 
   # @inputs (
   # (5..25)
@@ -83,22 +83,12 @@ defmodule Benchmarks do
       ]
     )
 
-    run_integer_maps_oddness()
-    Chart.build_from_csv("benchmark_runs/map_filter.csv", commands: [
-          [:set, :title, "filter odd integers"],
-          [:set, :xlabel, "Map size"],
-          [:set, :format, :x, "%.0s%c"],
-          [:set, :format, :y, "%.0s%cs"],
-          [:set, :grid, :xtics],
-          [:set, :grid, :ytics],
-          [:set, :logscale, :x, 10],
-          [:set, :logscale, :y, 10],
-        ])
 
     Chart.build_from_csv("benchmark_runs/map_filter.csv", "Filter odd integers", "Map size", "Average running time")
   end
 
   def run() do
+    run_integer_maps_oddness()
   end
 
 end
