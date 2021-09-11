@@ -52,6 +52,7 @@ defmodule Benchmarks do
           "MapsFilterProf.direct_filter" => fn input -> MapsFilterProf.direct_filter(input, &odd_value1?/1) end,
           "MapsFilterProf.direct_filter_inlined" => fn input -> MapsFilterProf.direct_filter_inlined(input, &odd_value1?/1) end,
           ":maps.filter" => fn input -> :maps.filter(&odd_value2?/2, input) end,
+          "Enum.filter + Enum.into" => fn input -> input |> Enum.filter(&odd_value1?/1) |> Enum.into(%{}) end,
                 },
       after_each: fn _ -> :erlang.garbage_collect() end, # make garbage collection unlikely to occur _during_ benchmark.
       inputs: build_inputs(6),
